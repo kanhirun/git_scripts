@@ -5,26 +5,26 @@ describe PivotalGitScripts::GitPair::Runner do
 
   describe 'set_git_config' do
     it 'calls git config with pairs in the options' do
-      runner.should_receive(:system).with('git config user.foo "bar baz"')
+      expect(runner).to receive(:system).with('git config user.foo "bar baz"')
 
       runner.set_git_config(false, 'foo' => 'bar baz')
     end
 
     it 'can unset git config options' do
-      runner.should_receive(:system).with('git config --unset user.foo')
+      expect(runner).to receive(:system).with('git config --unset user.foo')
 
       runner.set_git_config(false, 'foo' => nil)
     end
 
     it 'can handle multiple pairs in a hash' do
-      runner.should_receive(:system).with('git config --unset user.remove')
-      runner.should_receive(:system).with('git config user.ten "10"')
+      expect(runner).to receive(:system).with('git config --unset user.remove')
+      expect(runner).to receive(:system).with('git config user.ten "10"')
 
       runner.set_git_config(false, 'remove' => nil, 'ten' => '10')
     end
 
     it 'supports a global option' do
-      runner.should_receive(:system).with('git config --global user.foo "bar baz"')
+      expect(runner).to receive(:system).with('git config --global user.foo "bar baz"')
 
       runner.set_git_config(true, 'foo' => 'bar baz')
     end
@@ -40,7 +40,7 @@ describe PivotalGitScripts::GitPair::Runner do
       }
 
       names = runner.read_author_info_from_config(config, ['aa', 'tt'])
-      names.should =~ ['An Aardvark', 'The Turtle']
+      expect(names) =~ ['An Aardvark', 'The Turtle']
     end
 
     it 'exits when initials cannot be found' do
