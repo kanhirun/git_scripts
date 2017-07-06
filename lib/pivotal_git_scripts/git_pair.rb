@@ -12,7 +12,7 @@ module PivotalGitScripts
 
     def self.commit(argv)
       runner = Runner.new
-      runner.commit(argv)
+      runner.commit_better(argv)
     end
 
     class GitPairException < Exception; end
@@ -70,6 +70,37 @@ module PivotalGitScripts
       rescue GitPairException => e
         puts e.message
         exit 1
+      end
+
+      def commit_better(argv)
+        if argv[0] == '-h'
+          puts 'Usage: git pair-commit [options_for_git_commit]'
+          puts ''
+          puts 'Commits changes to the repository using `git commit`, but randomly chooses the author email from the'
+          puts 'members of the pair. In order for GitHub to assign credit for the commit activity, the user\'s email'
+          puts 'must be linked in their GitHub account.'
+          exit 0
+        end
+
+        config = read_pairs_config
+        author_details = extract_author_details_from_config(config, current_pair_initials).values
+
+        last_author = `git log -1 --format=%an`.strip
+        last_author_ind = author_details.find_index { |author_detail, i| author_detail[:name] == last_author }
+        if last_author.empty? || last_author_ind.nil?
+          author = author_details[0]
+          committer = author_details[1] || author
+        else
+          j = last_author_ind+1
+          n = author_details.length
+
+          author = author_details[ (last_author_ind+1) % n ]
+          committer = author_details[ (j+1) % n ]
+        end
+
+        passthrough_args =  argv.map{|arg| "'#{arg}'"}.join(' ')
+        env_variables = "GIT_AUTHOR_NAME='#{author[:name]}' GIT_AUTHOR_EMAIL='#{author[:email]}' GIT_COMMITTER_NAME='#{committer[:name]}' GIT_COMMITTER_EMAIL='#{committer[:email]}'"
+        system "#{env_variables} git commit #{passthrough_args}"
       end
 
       def current_pair_initials
