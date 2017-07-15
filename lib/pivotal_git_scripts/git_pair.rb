@@ -39,10 +39,6 @@ module PivotalGitScripts
           set_git_config global, git_config
           puts "Unset#{' global' if global} user.name, #{'user.email, ' unless no_email(config)}user.initials"
         end
-
-        [:name, :email, :initials].each do |key|
-          report_git_settings(git_dir, key)
-        end
       rescue GitPairException => e
         puts e.message
         exit 1
